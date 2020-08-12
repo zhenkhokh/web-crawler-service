@@ -71,7 +71,7 @@ public class CrawlerApiControllerTest {
 
         assertThat(mvcResult.getResponse().getContentAsString()).isEmpty();
 
-        Mockito.when(crawlerService.deepCrawl(Mockito.anyString(), Mockito.anyInt(), Mockito.anyList()))
+        Mockito.when(crawlerService.deepCrawl(Mockito.anyString(), Mockito.anyInt(), Mockito.anyList(), true))
                 .thenReturn(pageTreeInfo);
         mvcResult = mockMvc
                 .perform(MockMvcRequestBuilders.get("/crawler?url=something&depth=5")

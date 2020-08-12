@@ -23,7 +23,7 @@ public interface CrawlerService {
      *            already processed urls to avoid loops
      * @return page info upto desired or max depth
      */
-    public PageTreeInfo deepCrawl(final String url, final int depth, List<String> processedUrls);
+    public PageTreeInfo deepCrawl(final String url, final int depth, List<String> processedUrls, boolean first);
 
     /**
      * get page info for given url

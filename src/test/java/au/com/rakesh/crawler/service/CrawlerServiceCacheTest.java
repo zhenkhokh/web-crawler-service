@@ -30,7 +30,7 @@ public class CrawlerServiceCacheTest {
 
     @Test
     public void testCacheOnDeepCrawl() {
-        final PageTreeInfo info = crawlerService.deepCrawl("http://spring.io", 0, null);
+        final PageTreeInfo info = crawlerService.deepCrawl("http://spring.io", 0, null, true);
         assertThat(info).isNotNull().satisfies(treeInfo -> {
             assertThat(treeInfo.getTitle()).contains("Spring");
             assertThat(treeInfo.getUrl()).contains("http://spring.io");

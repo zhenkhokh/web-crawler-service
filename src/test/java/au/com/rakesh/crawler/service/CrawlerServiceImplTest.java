@@ -24,7 +24,7 @@ public class CrawlerServiceImplTest {
 
     @Test
     public void testDeepCrawl() {
-        final PageTreeInfo info = crawlerService.deepCrawl("http://spring.io", 1, null);
+        final PageTreeInfo info = crawlerService.deepCrawl("http://spring.io", 1, null, true);
         assertThat(info).isNotNull().satisfies(treeInfo -> {
             assertThat(treeInfo.getTitle()).contains("Spring");
             assertThat(treeInfo.getUrl()).contains("http://spring.io");

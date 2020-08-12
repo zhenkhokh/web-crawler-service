@@ -1,8 +1,13 @@
 package au.com.rakesh.crawler.rest;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import javax.inject.Inject;
+import javax.swing.text.html.Option;
 import javax.validation.constraints.NotNull;
 
 import org.springframework.beans.factory.annotation.Value;
@@ -31,7 +36,7 @@ public class CrawlerApiController implements CrawlerApi {
     private CrawlerProperties crawlerProperties;
 
     @Override
-    @GetMapping(value = "/crawler", produces = { MediaType.APPLICATION_JSON_VALUE })
+    @GetMapping(value = "/crawler", produces = {MediaType.APPLICATION_JSON_VALUE})
     public ResponseEntity<PageTreeInfo> getWebPageTreeInfo(
             @NotNull @RequestParam(value = "url", required = true) final String url,
             @RequestParam(value = "depth", required = false) final Integer depth) {
@@ -42,7 +47,54 @@ public class CrawlerApiController implements CrawlerApi {
         log.info(
                 "Depth might be optimized to go upto Max defined in property:'app.crawler.max-depth-allowed'. optimized depth: {}",
                 newDepth);
-        return new ResponseEntity<>(crawlerService.deepCrawl(url, depth, null), HttpStatus.OK);
+        int offset = 10;
+        PageTreeInfo pageTreeInfo = crawlerService.deepCrawl(url, 1, null, true);
+        PageTreeInfo pageTreeInfoPrev = pageTreeInfo;
+        boolean isNextPage = pageTreeInfo != null;
+        while (isNextPage) {
+            String urlParams = String.format("?citingPapersSort=relevance&citingPapersLimit=10&citingPapersOffset=%d"
+                    , offset);
+            PageTreeInfo pageTreeInfo_ = crawlerService.deepCrawl(url + urlParams, 1, null, true);
+            isNextPage = false;
+            if (pageTreeInfo_!=null) {
+                pageTreeInfo_.setNodes(pageTreeInfo_.getNodes().stream()
+                        .filter(a -> !a.getUrl().contains(url))
+                        .flatMap(a -> {
+                            a.setUrl(a.getUrl().replace(urlParams, ""));
+                            return Stream.of(a);
+                        }).collect(Collectors.toList()));
+                pageTreeInfo.getNodes().addAll(pageTreeInfo_.getNodes()
+                        .stream().filter(node->!pageTreeInfo.getNodes().contains(node)).collect(Collectors.toList()));
+                offset = offset + 10;
+                isNextPage = !pageTreeInfoPrev.getNodes().equals(pageTreeInfo_.getNodes());
+                pageTreeInfoPrev = pageTreeInfo_;
+            }
+        }
+        final List<PageTreeInfo> excluded = new ArrayList(pageTreeInfoPrev.getNodes());
+        List topThree = excluded.stream()
+                .filter(a -> !a.getUrl().contains("#"))
+                .filter(a -> !a.getUrl().contains(url))
+                .filter(a -> !a.getTitle().matches("Figure \\d+ from .*"))
+                .collect(Collectors.toList());
+        if (topThree.size()>=3)
+            topThree = topThree.subList(0,3);
+        pageTreeInfo.setNodes(pageTreeInfo.getNodes().stream()
+                .filter(node -> {
+                    Optional topCited =  excluded.stream().filter(e->node.equals(e)).findFirst();
+//                    if (topCited.isPresent())
+//                        excluded.remove(topCited.get());
+                    return !topCited.isPresent();
+                }).filter(a -> !a.getUrl().contains(url))
+                .collect(Collectors.toList()));
+        pageTreeInfo.getNodes().addAll(0, topThree);
+//        int n=0;
+        if (depth>1)
+            for (PageTreeInfo node: pageTreeInfo.getNodes()) {
+                ResponseEntity<PageTreeInfo> deepResponde = getWebPageTreeInfo(node.getUrl(),depth-1);
+                node.addNodesItem(deepResponde.getBody());
+//                if (++n>0)
+//                    break;
+            }
+        return new ResponseEntity<>(pageTreeInfo, HttpStatus.OK);
     }
-
 }
