@@ -58,7 +58,10 @@ public class CrawlerServiceImpl implements CrawlerService {
                     mainTitle = pageInfo.getTitle();
                     pageTreeInfo.title(mainTitle).valid(true)
                             .fieldOfStudy(pageInfo.getFieldOfStudy())
-                            .publishedDate(pageInfo.getPublishedDate());
+                            .publishedDate(pageInfo.getPublishedDate())
+                            .authors(pageInfo.getAuthors())
+                            .description(pageInfo.getDescription())
+                            .pdfURL(pageInfo.getPdfURL());
 //                            .flexRowPaperMeta(pageInfo.getFlexRowPaperMeta());
                     log.info("Found {} links on the web page: {}", pageInfo.getLinks().size(), url);
                     pageInfo.getLinks().forEach(link -> {
@@ -98,20 +101,27 @@ public class CrawlerServiceImpl implements CrawlerService {
                     .collect(Collectors.toList()));
             final String title = doc.title();
             log.debug("Fetched title: {}, links[{}] for url: {}", title, links.nextAll(), url);
-            Element pdfURL = (Element) toFlexRowNode(doc.body().getElementById("app"),"class", "flex-row paper-meta");
-            Element fieldOfStudy = pdfURL!=null
-                    && pdfURL.childNodes().size()>=3 ? (Element) pdfURL.childNode(2) :null;
-            //doc.body().getElementById("app").childNodes().get(0).childNodes.get(1).childNodes().get(0).childNodes().get(0).childNodes().get(0).childNodes().get(0).childNodes().get(0).childNodes().get(0).childNodes().get(3)
-            Element publishedDate = (Element) toFlexRowNode(pdfURL, "data-selenium-selector", "paper-year");
-            if (!(fieldOfStudy != null && fieldOfStudy.childNode(0) != null &&  fieldOfStudy.childNode(0) instanceof TextNode))
-                log.debug("hello");
+            Element meta = (Element) nodeByAttr(doc.body().getElementById("app"),"class", "flex-row paper-meta");
+            Element fieldOfStudy = meta!=null
+                    && meta.childNodes().size()>=3 ? (Element) meta.childNode(2) : null;
+            Element publishedDate = (Element) nodeByAttr(meta, "data-selenium-selector", "paper-year");
+            String authorNames = nodesByAttr(doc.head(), "name", "citation_author")
+                    .stream().map(author->author.attr("content"))
+                    .reduce("", (l, r) -> new StringBuilder().append(l)
+                            .append(l.isEmpty() || r.isEmpty() ?"":", ").append(r).toString());
+            Optional<String> pdfURL =  nodesByAttr(doc.head(), "name", "citation_pdf_url")
+                    .stream().map(url_ -> url_.attr("content")).findFirst();
+            Optional<String> description = nodesByAttr(doc.head(), "name", "description")
+                    .stream().map(d -> d.attr("content")).findFirst();
 
             return Optional.of(new PageInfo(title, url, links,
-                    //pdfURL,
+                    pdfURL.isPresent()? pdfURL.get() : null,
                     fieldOfStudy != null && fieldOfStudy.childNode(0) != null &&  fieldOfStudy.childNode(0) instanceof TextNode
                             ? ((TextNode) (fieldOfStudy.childNode(0))).text() : null,
                     publishedDate != null && publishedDate.childNode(0) != null
-                            ? ((TextNode) publishedDate.childNode(0).childNode(0).childNode(0)).text() : null));
+                            ? ((TextNode) publishedDate.childNode(0).childNode(0).childNode(0)).text() : null
+                    , description.isPresent() ? description.get() : null
+                    , authorNames));
         } catch (final IOException | IllegalArgumentException e) {
             log.error(String.format("Error getting contents of url %s", url), e);
             return Optional.empty();
@@ -132,7 +142,7 @@ public class CrawlerServiceImpl implements CrawlerService {
                 : toNextRefNode(node.parentNode());
     }
 
-    private Node toFlexRowNode(Node node, final String key, final String val) {
+    private Node nodeByAttr(Node node, final String key, final String val) {
         if (node == null)
             return null;
         if (node.attributes() != null
@@ -141,12 +151,19 @@ public class CrawlerServiceImpl implements CrawlerService {
             return node;
         Node out = null;
         for (Node child : node.childNodes()) {
-            out = toFlexRowNode(child, key, val);
+            out = nodeByAttr(child, key, val);
             if (out != null)
                 break;
         }
         return out;
-//        Optional<Node> mayBe = node.childNodes().stream().filter(child -> toFlexRowNode(child) != null).findFirst();
+//        Optional<Node> mayBe = node.childNodes().stream().filter(child -> nodeByAttr(child, key, val) != null).findFirst();
 //        return mayBe.isPresent() ? mayBe.get() : null;
+    }
+
+    private List<Node> nodesByAttr(Node node, final String key, final String val) {
+        return node.childNodes().stream().filter(child ->
+        child !=null && child.attributes() != null
+                && child.attributes().hasKey(key)
+                && child.attributes().get(key).equals(val)).collect(Collectors.toList());
     }
 }

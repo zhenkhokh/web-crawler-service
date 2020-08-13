@@ -33,12 +33,14 @@ public class PageTreeInfo implements Serializable {
     @JsonProperty("nodes")
     private List<PageTreeInfo> nodes;
 
+    @JsonProperty("pdfURL")
+    private String pdfURL;
 
-    @JsonProperty("fieldOfStudy")
-    private String fieldOfStudy;
+    @JsonProperty("description")
+    private String description;
 
-    @JsonProperty("publishedDate")
-    private String publishedDate;
+    @JsonProperty("authors")
+    private String authors;
 
     //    @ApiModelProperty(value = "page meta")
 //    public Element getFlexRowPaperMeta() {
@@ -67,6 +69,38 @@ public class PageTreeInfo implements Serializable {
         this.publishedDate = publishedDate;
     }
 
+    @JsonProperty("fieldOfStudy")
+    private String fieldOfStudy;
+
+    @JsonProperty("publishedDate")
+    private String publishedDate;
+
+    @ApiModelProperty(value = "page pdfURL")
+    public String getPdfURL() {
+        return pdfURL;
+    }
+
+    public void setPdfURL(String pdfURL) {
+        this.pdfURL = pdfURL;
+    }
+
+    @ApiModelProperty(value = "page description")
+    public String getDescription() {
+        return description;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
+    }
+
+    @ApiModelProperty(value = "page authors")
+    public String getAuthors() {
+        return authors;
+    }
+
+    public void setAuthors(String authors) {
+        this.authors = authors;
+    }
 //    @JsonProperty("flexRowPaperMeta")
 //    private Element flexRowPaperMeta;
 
@@ -122,16 +156,21 @@ public class PageTreeInfo implements Serializable {
         return this;
     }
 
-    //
-//    private String pdfURL;
-//
-//    private String fieldOfStudy;
-//
-//    private String publishedDate;
-//
-//    private String description;
-//
-//    private String authors;
+    public PageTreeInfo pdfURL(final String pdfURL) {
+        this.pdfURL =  pdfURL;
+        return this;
+    }
+
+    public PageTreeInfo description(final String description) {
+        this.description =  description;
+        return this;
+    }
+
+    public PageTreeInfo authors(final String authors) {
+        this.authors =  authors;
+        return this;
+    }
+
     /**
      * Page title
      *

@@ -29,14 +29,14 @@ public class PageInfo implements Serializable {
 
 //    private Element flexRowPaperMeta;
 //
-//    private String pdfURL;
-//
+    private String pdfURL;
+
     private String fieldOfStudy;
 
     private String publishedDate;
-//
-//    private String description;
-//
-//    private String authors;
+
+    private String description;
+
+    private String authors;
 
 }
