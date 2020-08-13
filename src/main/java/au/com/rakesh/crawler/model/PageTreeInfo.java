@@ -10,6 +10,7 @@ import javax.validation.Valid;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import io.swagger.annotations.ApiModelProperty;
+import org.jsoup.nodes.Element;
 
 /**
  * PageTreeInfo
@@ -31,6 +32,43 @@ public class PageTreeInfo implements Serializable {
 
     @JsonProperty("nodes")
     private List<PageTreeInfo> nodes;
+
+
+    @JsonProperty("fieldOfStudy")
+    private String fieldOfStudy;
+
+    @JsonProperty("publishedDate")
+    private String publishedDate;
+
+    //    @ApiModelProperty(value = "page meta")
+//    public Element getFlexRowPaperMeta() {
+//        return flexRowPaperMeta;
+//    }
+//
+//    public void setFlexRowPaperMeta(Element flexRowPaperMeta) {
+//        this.flexRowPaperMeta = flexRowPaperMeta;
+//    }
+
+    @ApiModelProperty(value = "page fieldOfStudy")
+    public String getFieldOfStudy() {
+        return fieldOfStudy;
+    }
+
+    public void setFieldOfStudy(String fieldOfStudy) {
+        this.fieldOfStudy = fieldOfStudy;
+    }
+
+    @ApiModelProperty(value = "page publishedDate")
+    public String getPublishedDate() {
+        return publishedDate;
+    }
+
+    public void setPublishedDate(String publishedDate) {
+        this.publishedDate = publishedDate;
+    }
+
+//    @JsonProperty("flexRowPaperMeta")
+//    private Element flexRowPaperMeta;
 
     /**
      * get model with url with default invalid
@@ -69,6 +107,31 @@ public class PageTreeInfo implements Serializable {
         return this;
     }
 
+//    public PageTreeInfo flexRowPaperMeta(final Element flexRowPaperMeta) {
+//        this.flexRowPaperMeta =  flexRowPaperMeta;
+//        return this;
+//    }
+
+    public PageTreeInfo fieldOfStudy(final String fieldOfStudy) {
+        this.fieldOfStudy =  fieldOfStudy;
+        return this;
+    }
+
+    public PageTreeInfo publishedDate(final String publishedDate) {
+        this.publishedDate =  publishedDate;
+        return this;
+    }
+
+    //
+//    private String pdfURL;
+//
+//    private String fieldOfStudy;
+//
+//    private String publishedDate;
+//
+//    private String description;
+//
+//    private String authors;
     /**
      * Page title
      *

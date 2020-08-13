@@ -70,7 +70,8 @@ public class CrawlerApiController implements CrawlerApi {
                 pageTreeInfoPrev = pageTreeInfo_;
             }
         }
-        final List<PageTreeInfo> excluded = new ArrayList(pageTreeInfoPrev.getNodes());
+        final List<PageTreeInfo> excluded = new ArrayList(pageTreeInfoPrev !=null && pageTreeInfoPrev.getNodes()!=null
+                ?pageTreeInfoPrev.getNodes():new ArrayList());
         List topThree = excluded.stream()
                 .filter(a -> !a.getUrl().contains("#"))
                 .filter(a -> !a.getUrl().contains(url))
